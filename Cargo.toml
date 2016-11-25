@@ -1,0 +1,6 @@
+[package]
+name = "rusblo"
+version = "0.1.0"
+authors = ["adorechic <adorechic@gmail.com>"]
+
+[dependencies]
