@@ -4,10 +4,15 @@ extern crate env_logger;
 
 use iron::prelude::*;
 use iron::status;
+use iron::headers::ContentType;
 use logger::Logger;
 
 fn handler(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, "Hello")))
+    Ok(
+        Response::with(
+            (ContentType::json().0, status::Ok, "{\"message\": \"hello\"}")
+        )
+    )
 }
 
 fn main() {
