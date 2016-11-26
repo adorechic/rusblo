@@ -7,3 +7,4 @@ authors = ["adorechic <adorechic@gmail.com>"]
 iron = "0.4.*"
 logger = "0.2.*"
 env_logger = "*"
+rustc-serialize = "*"

@@ -1,17 +1,27 @@
 extern crate iron;
 extern crate logger;
 extern crate env_logger;
+extern crate rustc_serialize;
 
 use std::env;
 use iron::prelude::*;
 use iron::status;
 use iron::headers::ContentType;
 use logger::Logger;
+use rustc_serialize::json;
+
+#[derive(Debug, RustcEncodable)]
+struct Hello {
+    message: String
+}
 
 fn handler(_: &mut Request) -> IronResult<Response> {
+    let resource = Hello { message: "Hello!".to_string() };
+    let body = json::encode(&resource).unwrap();
+
     Ok(
         Response::with(
-            (ContentType::json().0, status::Ok, "{\"message\": \"hello\"}")
+            (ContentType::json().0, status::Ok, body)
         )
     )
 }
