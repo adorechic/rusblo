@@ -2,6 +2,7 @@ extern crate iron;
 extern crate logger;
 extern crate env_logger;
 extern crate rustc_serialize;
+extern crate router;
 
 use std::env;
 use iron::prelude::*;
@@ -9,6 +10,7 @@ use iron::status;
 use iron::headers::ContentType;
 use logger::Logger;
 use rustc_serialize::json;
+use router::Router;
 
 #[derive(Debug, RustcEncodable)]
 struct Hello {
@@ -31,9 +33,14 @@ fn main() {
         env::set_var("RUST_LOG", "info");
     }
     env_logger::init().unwrap();
+
+    let mut router = Router::new();
+    router.get("/hello", handler, "hello");
+
     let (logger_before, logger_after) = Logger::new(None);
-    let mut chain = Chain::new(handler);
+    let mut chain = Chain::new(router);
     chain.link_before(logger_before);
     chain.link_after(logger_after);
+
     Iron::new(chain).http("localhost:3000").unwrap();
 }
