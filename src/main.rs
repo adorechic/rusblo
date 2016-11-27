@@ -8,6 +8,7 @@ use std::env;
 use iron::prelude::*;
 use iron::status;
 use iron::headers::ContentType;
+use iron::Handler;
 use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
@@ -17,15 +18,19 @@ struct Hello {
     message: String
 }
 
-fn handler(_: &mut Request) -> IronResult<Response> {
-    let resource = Hello { message: "Hello!".to_string() };
-    let body = json::encode(&resource).unwrap();
+struct HelloHandler {}
 
-    Ok(
-        Response::with(
-            (ContentType::json().0, status::Ok, body)
+impl Handler for HelloHandler {
+    fn handle(&self, _: &mut Request) -> IronResult<Response> {
+        let resource = Hello { message: "Hello!".to_string() };
+        let body = json::encode(&resource).unwrap();
+
+        Ok(
+            Response::with(
+                (ContentType::json().0, status::Ok, body)
+            )
         )
-    )
+    }
 }
 
 fn main() {
@@ -35,7 +40,7 @@ fn main() {
     env_logger::init().unwrap();
 
     let mut router = Router::new();
-    router.get("/hello", handler, "hello");
+    router.get("/hello", HelloHandler{}, "hello");
 
     let (logger_before, logger_after) = Logger::new(None);
     let mut chain = Chain::new(router);
