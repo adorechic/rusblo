@@ -33,6 +33,27 @@ impl Handler for HelloHandler {
     }
 }
 
+#[derive(Debug, RustcEncodable)]
+struct User {
+    id: u16,
+    name: String
+}
+
+struct CreateUserHandler {}
+
+impl Handler for CreateUserHandler {
+    fn handle(&self, _: &mut Request) -> IronResult<Response> {
+        let resource = User { id: 1, name: "Alice".to_string() };
+        let body = json::encode(&resource).unwrap();
+
+        Ok(
+            Response::with(
+                (ContentType::json().0, status::Created, body)
+            )
+        )
+    }
+}
+
 fn main() {
     if let Err(_) = env::var("RUST_LOG") {
         env::set_var("RUST_LOG", "info");
@@ -41,6 +62,7 @@ fn main() {
 
     let mut router = Router::new();
     router.get("/hello", HelloHandler{}, "hello");
+    router.post("/users", CreateUserHandler{}, "create_user");
 
     let (logger_before, logger_after) = Logger::new(None);
     let mut chain = Chain::new(router);
