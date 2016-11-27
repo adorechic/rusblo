@@ -3,6 +3,7 @@ extern crate logger;
 extern crate env_logger;
 extern crate rustc_serialize;
 extern crate router;
+extern crate params;
 
 use std::env;
 use iron::prelude::*;
@@ -12,6 +13,7 @@ use iron::Handler;
 use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
+use params::{Params,Value};
 
 #[derive(Debug, RustcEncodable)]
 struct Hello {
@@ -42,15 +44,21 @@ struct User {
 struct CreateUserHandler {}
 
 impl Handler for CreateUserHandler {
-    fn handle(&self, _: &mut Request) -> IronResult<Response> {
-        let resource = User { id: 1, name: "Alice".to_string() };
-        let body = json::encode(&resource).unwrap();
+    fn handle(&self, req: &mut Request) -> IronResult<Response> {
+        let params = req.get_ref::<Params>().unwrap();
+        match params.get("name") {
+            Some(&Value::String(ref name)) => {
+                let resource = User { id: 1, name: name.clone() };
+                let body = json::encode(&resource).unwrap();
 
-        Ok(
-            Response::with(
-                (ContentType::json().0, status::Created, body)
-            )
-        )
+                Ok(
+                    Response::with(
+                        (ContentType::json().0, status::Created, body)
+                    )
+                )
+            },
+            _ => panic!("error")
+        }
     }
 }
 
