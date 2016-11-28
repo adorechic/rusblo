@@ -9,6 +9,7 @@ extern crate params;
 extern crate rusqlite;
 
 use std::env;
+use std::path::Path;
 use iron::prelude::*;
 use iron::status;
 use iron::headers::ContentType;
@@ -82,7 +83,9 @@ fn start_server() {
 
 fn migrate() {
     info!("Run migration!");
-    let conn = Connection::open_in_memory().unwrap();
+    let path = Path::new("tmp/db");
+    let conn = Connection::open(path).unwrap();
+    conn.execute("drop table if exists users", &[]).unwrap();
     conn.execute(
         "create table users (
            id integer primary key,
