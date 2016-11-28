@@ -1,5 +1,7 @@
 extern crate iron;
 extern crate logger;
+#[macro_use]
+extern crate log;
 extern crate env_logger;
 extern crate rustc_serialize;
 extern crate router;
@@ -72,11 +74,12 @@ fn start_server() {
     chain.link_before(logger_before);
     chain.link_after(logger_after);
 
+    info!("start server");
     Iron::new(chain).http("localhost:3000").unwrap();
 }
 
 fn migrate() {
-    println!("Run migration!");
+    info!("Run migration!");
 }
 
 fn main() {
