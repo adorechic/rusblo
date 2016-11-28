@@ -81,10 +81,14 @@ fn start_server() {
     Iron::new(chain).http("localhost:3000").unwrap();
 }
 
+fn connection() -> Connection {
+    let path = Path::new("tmp/db");
+    Connection::open(path).unwrap()
+}
+
 fn migrate() {
     info!("Run migration!");
-    let path = Path::new("tmp/db");
-    let conn = Connection::open(path).unwrap();
+    let conn = connection();
     conn.execute("drop table if exists users", &[]).unwrap();
     conn.execute(
         "create table users (
