@@ -6,6 +6,7 @@ extern crate env_logger;
 extern crate rustc_serialize;
 extern crate router;
 extern crate params;
+extern crate rusqlite;
 
 use std::env;
 use iron::prelude::*;
@@ -16,6 +17,7 @@ use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
 use params::{Params,Value};
+use rusqlite::Connection;
 
 #[derive(Debug, RustcEncodable)]
 struct Hello {
@@ -80,6 +82,12 @@ fn start_server() {
 
 fn migrate() {
     info!("Run migration!");
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute(
+        "create table users (
+           id integer primary key,
+           name varchar not null
+        )", &[]).unwrap();
 }
 
 fn main() {
