@@ -62,12 +62,7 @@ impl Handler for CreateUserHandler {
     }
 }
 
-fn main() {
-    if let Err(_) = env::var("RUST_LOG") {
-        env::set_var("RUST_LOG", "info");
-    }
-    env_logger::init().unwrap();
-
+fn start_server() {
     let mut router = Router::new();
     router.get("/hello", HelloHandler{}, "hello");
     router.post("/users", CreateUserHandler{}, "create_user");
@@ -78,4 +73,22 @@ fn main() {
     chain.link_after(logger_after);
 
     Iron::new(chain).http("localhost:3000").unwrap();
+}
+
+fn migrate() {
+    println!("Run migration!");
+}
+
+fn main() {
+    if let Err(_) = env::var("RUST_LOG") {
+        env::set_var("RUST_LOG", "info");
+    }
+    env_logger::init().unwrap();
+
+    let args: Vec<String> = env::args().collect();
+    match args[1].as_ref() {
+        "migrate" => migrate(),
+        "server"  => start_server(),
+        _         => panic!("Unknown command: {}", args[1]),
+    }
 }
