@@ -42,7 +42,7 @@ impl Handler for HelloHandler {
 
 #[derive(Debug, RustcEncodable)]
 struct User {
-    id: u16,
+    id: i32,
     name: String
 }
 
@@ -58,7 +58,14 @@ impl Handler for CreateUserHandler {
                     "insert into users (name) values ($1)",
                     &[name]
                 ).unwrap();
-                let resource = User { id: 1, name: name.clone() };
+
+                let mut stmt = conn.prepare(
+                    "select id, name from users order by id desc limit 1"
+                ).unwrap();
+                let mut users = stmt.query_map(&[], |row| {
+                    User { id: row.get(0), name: row.get(1) }
+                }).unwrap();
+                let resource = users.next().unwrap().unwrap();
                 let body = json::encode(&resource).unwrap();
 
                 Ok(
