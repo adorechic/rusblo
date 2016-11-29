@@ -53,6 +53,11 @@ impl Handler for CreateUserHandler {
         let params = req.get_ref::<Params>().unwrap();
         match params.get("name") {
             Some(&Value::String(ref name)) => {
+                let conn = connection();
+                conn.execute(
+                    "insert into users (name) values ($1)",
+                    &[name]
+                ).unwrap();
                 let resource = User { id: 1, name: name.clone() };
                 let body = json::encode(&resource).unwrap();
 
