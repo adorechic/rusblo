@@ -92,7 +92,7 @@ fn migrate() {
     conn.execute("drop table if exists users", &[]).unwrap();
     conn.execute(
         "create table users (
-           id integer primary key,
+           id integer primary key autoincrement,
            name varchar not null
         )", &[]).unwrap();
 }
