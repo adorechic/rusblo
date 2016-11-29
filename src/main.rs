@@ -13,7 +13,6 @@ use std::path::Path;
 use iron::prelude::*;
 use iron::status;
 use iron::headers::ContentType;
-use iron::Handler;
 use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
@@ -25,10 +24,10 @@ struct Hello {
     message: String
 }
 
-struct HelloHandler {}
+struct HelloController {}
 
-impl Handler for HelloHandler {
-    fn handle(&self, _: &mut Request) -> IronResult<Response> {
+impl HelloController {
+    fn show(_: &mut Request) -> IronResult<Response> {
         let resource = Hello { message: "Hello!".to_string() };
         let body = json::encode(&resource).unwrap();
 
@@ -46,10 +45,10 @@ struct User {
     name: String
 }
 
-struct CreateUserHandler {}
+struct UserController {}
 
-impl Handler for CreateUserHandler {
-    fn handle(&self, req: &mut Request) -> IronResult<Response> {
+impl UserController {
+    fn create(req: &mut Request) -> IronResult<Response> {
         let params = req.get_ref::<Params>().unwrap();
         match params.get("name") {
             Some(&Value::String(ref name)) => {
@@ -81,8 +80,8 @@ impl Handler for CreateUserHandler {
 
 fn start_server() {
     let mut router = Router::new();
-    router.get("/hello", HelloHandler{}, "hello");
-    router.post("/users", CreateUserHandler{}, "create_user");
+    router.get("/hello", HelloController::show, "hello");
+    router.post("/users", UserController::create, "create_user");
 
     let (logger_before, logger_after) = Logger::new(None);
     let mut chain = Chain::new(router);
