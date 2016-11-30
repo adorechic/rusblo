@@ -76,12 +76,31 @@ impl UserController {
             _ => panic!("error")
         }
     }
+
+    fn index(_: &mut Request) -> IronResult<Response> {
+        let conn = connection();
+        let mut stmt = conn.prepare(
+            "select id, name from users"
+        ).unwrap();
+        let users: Vec<User> = stmt.query_map(&[], |row| {
+            User { id: row.get(0), name: row.get(1) }
+        }).unwrap().map(|r| r.unwrap()).collect::<Vec<User>>();
+        let body = json::encode(&users).unwrap();
+
+        Ok(
+            Response::with(
+                (ContentType::json().0, status::Created, body)
+            )
+        )
+
+    }
 }
 
 fn start_server() {
     let mut router = Router::new();
     router.get("/hello", HelloController::show, "hello");
     router.post("/users", UserController::create, "create_user");
+    router.get("/users", UserController::index, "index_user");
 
     let (logger_before, logger_after) = Logger::new(None);
     let mut chain = Chain::new(router);
