@@ -23,16 +23,15 @@ use rusblo::{Hello,User};
 
 struct HelloController {}
 
+fn render_json(status: status::Status, body: String) -> IronResult<Response> {
+    Ok(Response::with((ContentType::json().0, status, body)))
+}
+
 impl HelloController {
     fn show(_: &mut Request) -> IronResult<Response> {
         let resource = Hello { message: "Hello!".to_string() };
         let body = json::encode(&resource).unwrap();
-
-        Ok(
-            Response::with(
-                (ContentType::json().0, status::Ok, body)
-            )
-        )
+        render_json(status::Ok, body)
     }
 }
 
@@ -45,12 +44,7 @@ impl UserController {
             Some(&Value::String(ref name)) => {
                 let user = User::create(name);
                 let body = json::encode(&user).unwrap();
-
-                Ok(
-                    Response::with(
-                        (ContentType::json().0, status::Created, body)
-                    )
-                )
+                render_json(status::Created, body)
             },
             _ => panic!("error")
         }
@@ -66,11 +60,7 @@ impl UserController {
         }).unwrap().map(|r| r.unwrap()).collect::<Vec<User>>();
         let body = json::encode(&users).unwrap();
 
-        Ok(
-            Response::with(
-                (ContentType::json().0, status::Ok, body)
-            )
-        )
+        render_json(status::Ok, body)
     }
 
     fn show(req: &mut Request) -> IronResult<Response> {
@@ -84,12 +74,7 @@ impl UserController {
         }).unwrap().next().unwrap().unwrap();
         let body = json::encode(&user).unwrap();
 
-        Ok(
-            Response::with(
-                (ContentType::json().0, status::Ok, body)
-            )
-        )
-
+        render_json(status::Ok, body)
     }
 }
 
