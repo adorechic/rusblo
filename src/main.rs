@@ -89,7 +89,25 @@ impl UserController {
 
         Ok(
             Response::with(
-                (ContentType::json().0, status::Created, body)
+                (ContentType::json().0, status::Ok, body)
+            )
+        )
+    }
+
+    fn show(req: &mut Request) -> IronResult<Response> {
+        let ref id = req.extensions.get::<Router>().unwrap().find("id").unwrap();
+        let conn = connection();
+        let mut stmt = conn.prepare(
+            "select id, name from users where id = $1 limit 1"
+        ).unwrap();
+        let user: User = stmt.query_map(&[id], |row| {
+            User { id: row.get(0), name: row.get(1) }
+        }).unwrap().next().unwrap().unwrap();
+        let body = json::encode(&user).unwrap();
+
+        Ok(
+            Response::with(
+                (ContentType::json().0, status::Ok, body)
             )
         )
 
@@ -101,6 +119,7 @@ fn start_server() {
     router.get("/hello", HelloController::show, "hello");
     router.post("/users", UserController::create, "create_user");
     router.get("/users", UserController::index, "index_user");
+    router.get("/users/:id", UserController::show, "show_user");
 
     let (logger_before, logger_after) = Logger::new(None);
     let mut chain = Chain::new(router);
