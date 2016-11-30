@@ -7,6 +7,7 @@ extern crate rustc_serialize;
 extern crate router;
 extern crate params;
 extern crate rusqlite;
+extern crate rusblo;
 
 use std::env;
 use std::path::Path;
@@ -18,11 +19,7 @@ use rustc_serialize::json;
 use router::Router;
 use params::{Params,Value};
 use rusqlite::Connection;
-
-#[derive(Debug, RustcEncodable)]
-struct Hello {
-    message: String
-}
+use rusblo::{Hello,User};
 
 struct HelloController {}
 
@@ -36,31 +33,6 @@ impl HelloController {
                 (ContentType::json().0, status::Ok, body)
             )
         )
-    }
-}
-
-#[derive(Debug, RustcEncodable)]
-struct User {
-    id: i32,
-    name: String
-}
-
-impl User {
-    fn create(name: &String) -> User {
-        let conn = connection();
-        conn.execute(
-            "insert into users (name) values ($1)",
-            &[name]
-        ).unwrap();
-
-        let mut stmt = conn.prepare(
-            "select last_insert_rowid()"
-        ).unwrap();
-        let id = stmt.query_map(&[], |row| {
-            row.get(0)
-        }).unwrap().next().unwrap().unwrap();
-
-        User { id: id, name: name.to_string() }
     }
 }
 
