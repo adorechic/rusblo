@@ -45,6 +45,25 @@ struct User {
     name: String
 }
 
+impl User {
+    fn create(name: &String) -> User {
+        let conn = connection();
+        conn.execute(
+            "insert into users (name) values ($1)",
+            &[name]
+        ).unwrap();
+
+        let mut stmt = conn.prepare(
+            "select last_insert_rowid()"
+        ).unwrap();
+        let id = stmt.query_map(&[], |row| {
+            row.get(0)
+        }).unwrap().next().unwrap().unwrap();
+
+        User { id: id, name: name.to_string() }
+    }
+}
+
 struct UserController {}
 
 impl UserController {
@@ -52,19 +71,7 @@ impl UserController {
         let params = req.get_ref::<Params>().unwrap();
         match params.get("name") {
             Some(&Value::String(ref name)) => {
-                let conn = connection();
-                conn.execute(
-                    "insert into users (name) values ($1)",
-                    &[name]
-                ).unwrap();
-
-                let mut stmt = conn.prepare(
-                    "select last_insert_rowid()"
-                ).unwrap();
-                let id = stmt.query_map(&[], |row| {
-                    row.get(0)
-                }).unwrap().next().unwrap().unwrap();
-                let user = User { id: id, name: name.to_string() };
+                let user = User::create(name);
                 let body = json::encode(&user).unwrap();
 
                 Ok(
