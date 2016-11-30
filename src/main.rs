@@ -59,13 +59,13 @@ impl UserController {
                 ).unwrap();
 
                 let mut stmt = conn.prepare(
-                    "select id, name from users order by id desc limit 1"
+                    "select last_insert_rowid()"
                 ).unwrap();
-                let mut users = stmt.query_map(&[], |row| {
-                    User { id: row.get(0), name: row.get(1) }
-                }).unwrap();
-                let resource = users.next().unwrap().unwrap();
-                let body = json::encode(&resource).unwrap();
+                let id = stmt.query_map(&[], |row| {
+                    row.get(0)
+                }).unwrap().next().unwrap().unwrap();
+                let user = User { id: id, name: name.to_string() };
+                let body = json::encode(&user).unwrap();
 
                 Ok(
                     Response::with(
