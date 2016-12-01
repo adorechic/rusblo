@@ -32,6 +32,19 @@ impl User {
 
         User { id: id, name: name.to_string() }
     }
+
+    pub fn all() -> Vec<User> {
+        let conn = connection();
+        let mut stmt = conn.prepare(
+            "select id, name from users"
+        ).unwrap();
+
+        let users: Vec<User> = stmt.query_map(&[], |row| {
+            User { id: row.get(0), name: row.get(1) }
+        }).unwrap().map(|r| r.unwrap()).collect::<Vec<User>>();
+
+        users
+    }
 }
 
 fn connection() -> Connection {
