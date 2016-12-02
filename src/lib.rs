@@ -45,6 +45,17 @@ impl User {
 
         users
     }
+
+    pub fn find(id: &str) -> User {
+        let conn = connection();
+        let mut stmt = conn.prepare(
+            "select id, name from users where id = $1 limit 1"
+        ).unwrap();
+        let user: User = stmt.query_map(&[&id], |row| {
+            User { id: row.get(0), name: row.get(1) }
+        }).unwrap().next().unwrap().unwrap();
+        user
+    }
 }
 
 fn connection() -> Connection {
