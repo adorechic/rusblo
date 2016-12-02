@@ -17,7 +17,7 @@ use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
 use params::{Params,Value};
-use rusblo::{Hello,User,migrate};
+use rusblo::model::{Hello,User,migrate};
 
 struct HelloController {}
 
