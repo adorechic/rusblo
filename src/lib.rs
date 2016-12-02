@@ -1,5 +1,7 @@
 extern crate rustc_serialize;
 extern crate rusqlite;
+#[macro_use]
+extern crate log;
 
 use std::path::Path;
 use rusqlite::Connection;
@@ -61,4 +63,15 @@ impl User {
 fn connection() -> Connection {
     let path = Path::new("tmp/db");
     Connection::open(path).unwrap()
+}
+
+pub fn migrate() {
+    info!("Run migration!");
+    let conn = connection();
+    conn.execute("drop table if exists users", &[]).unwrap();
+    conn.execute(
+        "create table users (
+           id integer primary key autoincrement,
+           name varchar not null
+        )", &[]).unwrap();
 }

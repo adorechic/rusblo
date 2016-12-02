@@ -10,7 +10,6 @@ extern crate rusqlite;
 extern crate rusblo;
 
 use std::env;
-use std::path::Path;
 use iron::prelude::*;
 use iron::status;
 use iron::headers::ContentType;
@@ -18,8 +17,7 @@ use logger::Logger;
 use rustc_serialize::json;
 use router::Router;
 use params::{Params,Value};
-use rusqlite::Connection;
-use rusblo::{Hello,User};
+use rusblo::{Hello,User,migrate};
 
 struct HelloController {}
 
@@ -80,22 +78,6 @@ fn start_server() {
 
     info!("start server");
     Iron::new(chain).http("localhost:3000").unwrap();
-}
-
-fn connection() -> Connection {
-    let path = Path::new("tmp/db");
-    Connection::open(path).unwrap()
-}
-
-fn migrate() {
-    info!("Run migration!");
-    let conn = connection();
-    conn.execute("drop table if exists users", &[]).unwrap();
-    conn.execute(
-        "create table users (
-           id integer primary key autoincrement,
-           name varchar not null
-        )", &[]).unwrap();
 }
 
 fn main() {
