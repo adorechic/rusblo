@@ -5,6 +5,23 @@ use iron::status;
 use model::{Hello,User};
 use router::Router;
 use iron::headers::ContentType;
+use logger::Logger;
+
+pub fn start_server() {
+    let mut router = Router::new();
+    router.get("/hello", HelloController::show, "hello");
+    router.post("/users", UserController::create, "create_user");
+    router.get("/users", UserController::index, "index_user");
+    router.get("/users/:id", UserController::show, "show_user");
+
+    let (logger_before, logger_after) = Logger::new(None);
+    let mut chain = Chain::new(router);
+    chain.link_before(logger_before);
+    chain.link_after(logger_after);
+
+    info!("start server");
+    Iron::new(chain).http("localhost:3000").unwrap();
+}
 
 fn render_json(status: status::Status, body: String) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status, body)))

@@ -5,6 +5,7 @@ extern crate log;
 extern crate iron;
 extern crate params;
 extern crate router;
+extern crate logger;
 
 pub mod model;
 pub mod controller;
