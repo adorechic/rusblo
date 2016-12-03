@@ -11,14 +11,9 @@ extern crate rusblo;
 
 use std::env;
 use iron::prelude::*;
-use iron::status;
-use iron::headers::ContentType;
 use logger::Logger;
-use rustc_serialize::json;
 use router::Router;
-use params::{Params,Value};
-use rusblo::model::{Hello,User,migrate};
-use rusblo::controller::*;
+use rusblo::model::migrate;
 
 fn start_server() {
     let mut router = Router::new();
