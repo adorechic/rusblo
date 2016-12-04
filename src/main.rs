@@ -1,12 +1,4 @@
-extern crate iron;
-extern crate logger;
-#[macro_use]
-extern crate log;
 extern crate env_logger;
-extern crate rustc_serialize;
-extern crate router;
-extern crate params;
-extern crate rusqlite;
 extern crate rusblo;
 
 use std::env;
