@@ -1,5 +1,6 @@
 use params::{Params,Value};
 use rustc_serialize::json;
+use rustc_serialize::Encodable;
 use iron::prelude::*;
 use iron::status;
 use model::{Hello,User};
@@ -23,7 +24,8 @@ pub fn start_server() {
     Iron::new(chain).http("localhost:3000").unwrap();
 }
 
-fn render_json(status: status::Status, body: String) -> IronResult<Response> {
+fn render_json<T: Encodable>(status: status::Status, resource: &T) -> IronResult<Response> {
+    let body = json::encode(&resource).unwrap();
     Ok(Response::with((ContentType::json().0, status, body)))
 }
 
@@ -32,8 +34,7 @@ pub struct HelloController {}
 impl HelloController {
     pub fn show(_: &mut Request) -> IronResult<Response> {
         let resource = Hello { message: "Hello!".to_string() };
-        let body = json::encode(&resource).unwrap();
-        render_json(status::Ok, body)
+        render_json(status::Ok, &resource)
     }
 }
 
@@ -45,8 +46,7 @@ impl UserController {
         match params.get("name") {
             Some(&Value::String(ref name)) => {
                 let user = User::create(name);
-                let body = json::encode(&user).unwrap();
-                render_json(status::Created, body)
+                render_json(status::Created, &user)
             },
             _ => panic!("error")
         }
@@ -54,16 +54,12 @@ impl UserController {
 
     pub fn index(_: &mut Request) -> IronResult<Response> {
         let users = User::all();
-        let body = json::encode(&users).unwrap();
-
-        render_json(status::Ok, body)
+        render_json(status::Ok, &users)
     }
 
     pub fn show(req: &mut Request) -> IronResult<Response> {
         let ref id = req.extensions.get::<Router>().unwrap().find("id").unwrap();
         let user = User::find(id);
-        let body = json::encode(&user).unwrap();
-
-        render_json(status::Ok, body)
+        render_json(status::Ok, &user)
     }
 }
