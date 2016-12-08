@@ -53,6 +53,14 @@ impl User {
         }).unwrap().next().unwrap().unwrap();
         user
     }
+
+    pub fn delete(&self) {
+        let conn = connection();
+        conn.execute(
+            "delete from users where id = $1",
+            &[&self.id]
+        ).unwrap();
+    }
 }
 
 fn connection() -> Connection {
