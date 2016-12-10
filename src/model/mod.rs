@@ -54,6 +54,14 @@ impl User {
         user
     }
 
+    pub fn save(&self) {
+        let conn = connection();
+        conn.execute(
+            "update users set name = $1 where id = $2",
+            &[&self.name, &self.id]
+        ).unwrap();
+    }
+
     pub fn delete(&self) {
         let conn = connection();
         conn.execute(

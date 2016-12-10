@@ -14,6 +14,7 @@ pub fn start_server() {
     router.post("/users", UserController::create, "create_user");
     router.get("/users", UserController::index, "index_user");
     router.get("/users/:id", UserController::show, "show_user");
+    router.put("/users/:id", UserController::update, "update_user");
     router.delete("/users/:id", UserController::destroy, "destroy_user");
 
     let (logger_before, logger_after) = Logger::new(None);
@@ -64,10 +65,32 @@ impl UserController {
         render_json(status::Ok, &user)
     }
 
+    pub fn update(req: &mut Request) -> IronResult<Response> {
+        let name_value = name_value(req);
+
+        let ref id = req.extensions.get::<Router>().unwrap().find("id").unwrap();
+        let mut user = User::find(id);
+
+        user.name = name_value;
+        user.save();
+        render_json(status::Ok, &user)
+
+    }
+
     pub fn destroy(req: &mut Request) -> IronResult<Response> {
         let ref id = req.extensions.get::<Router>().unwrap().find("id").unwrap();
         let user = User::find(id);
         user.delete();
         Ok(Response::with((ContentType::json().0, status::NoContent, "")))
+    }
+}
+
+fn name_value(req: &mut Request) -> String {
+    let params = req.get_ref::<Params>().unwrap();
+    match params.get("name") {
+        Some(&Value::String(ref name)) => {
+            name.to_string()
+        },
+        _ => panic!("error")
     }
 }
