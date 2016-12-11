@@ -44,14 +44,9 @@ pub struct UserController {}
 
 impl UserController {
     pub fn create(req: &mut Request) -> IronResult<Response> {
-        let params = req.get_ref::<Params>().unwrap();
-        match params.get("name") {
-            Some(&Value::String(ref name)) => {
-                let user = User::create(name);
-                render_json(status::Created, &user)
-            },
-            _ => panic!("error")
-        }
+        let name = name_param(req);
+        let user = User::create(&name);
+        render_json(status::Created, &user)
     }
 
     pub fn index(_: &mut Request) -> IronResult<Response> {
@@ -66,12 +61,12 @@ impl UserController {
     }
 
     pub fn update(req: &mut Request) -> IronResult<Response> {
-        let name_value = name_value(req);
+        let name = name_param(req);
 
         let ref id = req.extensions.get::<Router>().unwrap().find("id").unwrap();
         let mut user = User::find(id);
 
-        user.name = name_value;
+        user.name = name;
         user.save();
         render_json(status::Ok, &user)
 
@@ -85,7 +80,7 @@ impl UserController {
     }
 }
 
-fn name_value(req: &mut Request) -> String {
+fn name_param(req: &mut Request) -> String {
     let params = req.get_ref::<Params>().unwrap();
     match params.get("name") {
         Some(&Value::String(ref name)) => {
