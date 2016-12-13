@@ -1,5 +1,6 @@
 use std::path::Path;
 use rusqlite::Connection;
+use rusqlite::types::ToSql;
 
 #[derive(Debug, RustcEncodable)]
 pub struct Hello {
@@ -12,21 +13,25 @@ pub struct User {
     pub name: String
 }
 
+
+fn insert(sql: &str, params: &[&ToSql]) -> i32 {
+    let conn = connection();
+    conn.execute(sql, params).unwrap();
+    let mut stmt = conn.prepare(
+        "select last_insert_rowid()"
+    ).unwrap();
+    let id = stmt.query_map(&[], |row| {
+        row.get(0)
+    }).unwrap().next().unwrap().unwrap();
+    id
+}
+
 impl User {
     pub fn create(name: &String) -> User {
-        let conn = connection();
-        conn.execute(
+        let id = insert(
             "insert into users (name) values ($1)",
             &[name]
-        ).unwrap();
-
-        let mut stmt = conn.prepare(
-            "select last_insert_rowid()"
-        ).unwrap();
-        let id = stmt.query_map(&[], |row| {
-            row.get(0)
-        }).unwrap().next().unwrap().unwrap();
-
+        );
         User { id: id, name: name.to_string() }
     }
 
