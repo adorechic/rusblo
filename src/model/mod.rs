@@ -1,5 +1,5 @@
 use std::path::Path;
-use rusqlite::Connection;
+use rusqlite::{Connection,Row};
 use rusqlite::types::ToSql;
 
 #[derive(Debug, RustcEncodable)]
@@ -26,6 +26,16 @@ fn insert(sql: &str, params: &[&ToSql]) -> i32 {
     id
 }
 
+trait RowMapper {
+    fn map(row: &Row) -> Self;
+}
+
+impl RowMapper for User {
+    fn map(row: &Row) -> User {
+        User { id: row.get(0), name: row.get(1) }
+    }
+}
+
 impl User {
     pub fn create(name: &String) -> User {
         let id = insert(
@@ -42,7 +52,7 @@ impl User {
         ).unwrap();
 
         let users: Vec<User> = stmt.query_map(&[], |row| {
-            User { id: row.get(0), name: row.get(1) }
+            User::map(row)
         }).unwrap().map(|r| r.unwrap()).collect::<Vec<User>>();
 
         users
@@ -54,7 +64,7 @@ impl User {
             "select id, name from users where id = $1 limit 1"
         ).unwrap();
         let user: User = stmt.query_map(&[&id], |row| {
-            User { id: row.get(0), name: row.get(1) }
+            User::map(row)
         }).unwrap().next().unwrap().unwrap();
         user
     }
