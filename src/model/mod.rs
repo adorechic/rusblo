@@ -26,6 +26,15 @@ fn insert(sql: &str, params: &[&ToSql]) -> i32 {
     id
 }
 
+fn select<T: RowMapper>(sql: &str, params: &[&ToSql]) -> Vec<T> {
+    let conn = connection();
+    let mut stmt = conn.prepare(sql).unwrap();
+    let results: Vec<T> = stmt.query_map(params, |row| {
+        T::map(row)
+    }).unwrap().map(|r| r.unwrap()).collect::<Vec<T>>();
+    results
+}
+
 trait RowMapper {
     fn map(row: &Row) -> Self;
 }
@@ -46,15 +55,9 @@ impl User {
     }
 
     pub fn all() -> Vec<User> {
-        let conn = connection();
-        let mut stmt = conn.prepare(
-            "select id, name from users"
-        ).unwrap();
-
-        let users: Vec<User> = stmt.query_map(&[], |row| {
-            User::map(row)
-        }).unwrap().map(|r| r.unwrap()).collect::<Vec<User>>();
-
+        let users: Vec<User> = select(
+            "select id, name from users", &[]
+        );
         users
     }
 
