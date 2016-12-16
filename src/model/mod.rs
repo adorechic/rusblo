@@ -62,14 +62,10 @@ impl User {
     }
 
     pub fn find(id: &str) -> User {
-        let conn = connection();
-        let mut stmt = conn.prepare(
-            "select id, name from users where id = $1 limit 1"
-        ).unwrap();
-        let user: User = stmt.query_map(&[&id], |row| {
-            User::map(row)
-        }).unwrap().next().unwrap().unwrap();
-        user
+        let mut users: Vec<User> = select(
+            "select id, name from users where id = $1 limit 1", &[&id]
+        );
+        users.pop().unwrap()
     }
 
     pub fn save(&self) {
