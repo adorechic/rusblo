@@ -35,6 +35,11 @@ fn select<T: RowMapper>(sql: &str, params: &[&ToSql]) -> Vec<T> {
     results
 }
 
+fn execute(sql: &str, params: &[&ToSql]) {
+    let conn = connection();
+    conn.execute(sql, params).unwrap();
+}
+
 trait RowMapper {
     fn map(row: &Row) -> Self;
 }
@@ -69,19 +74,17 @@ impl User {
     }
 
     pub fn save(&self) {
-        let conn = connection();
-        conn.execute(
+        execute(
             "update users set name = $1 where id = $2",
             &[&self.name, &self.id]
-        ).unwrap();
+        )
     }
 
     pub fn delete(&self) {
-        let conn = connection();
-        conn.execute(
+        execute(
             "delete from users where id = $1",
             &[&self.id]
-        ).unwrap();
+        )
     }
 }
 
